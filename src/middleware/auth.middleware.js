@@ -13,8 +13,11 @@ module.exports = function (req, res, next) {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log("decoded: ", decoded);
 
-        req.user = decoded;
+        req.user = {
+            id: decoded.userId
+        };
         console.log("user decoded: ", req.user);
+
         next();
     }
     catch (err) {
