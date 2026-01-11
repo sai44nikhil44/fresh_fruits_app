@@ -2,7 +2,7 @@ const pool = require("../config/db");
 
 exports.getProfile = async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const userId = req.user.id;
         console.log("userId: ", userId);
 
         const result = await pool.query(
