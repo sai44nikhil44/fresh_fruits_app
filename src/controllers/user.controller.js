@@ -3,13 +3,11 @@ const pool = require("../config/db");
 exports.getProfile = async (req, res) => {
     try {
         const userId = req.user.id;
-        console.log("userId: ", userId);
 
         const result = await pool.query(
             "SELECT id, name, email, created_at FROM public.users WHERE id = $1",
             [userId]
         );
-        console.log("result data: ", result.rows[0]);
         res.json(result.rows[0]);
     }
     catch (err) {
