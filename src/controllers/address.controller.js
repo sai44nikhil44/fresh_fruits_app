@@ -70,6 +70,9 @@ exports.updateAddress = async (req, res) => {
 
     const { line1, line2, city, state, pincode } = req.body;
 
+    console.log("req.body: ", req.body);
+    console.log("userId", userId);
+    console.log("addressId: ", addressId);
     if (!line1 && !line2 && !city && !state && !pincode) {
         return res.status(400).json({
             message: "At least one field is required to update"
@@ -108,7 +111,7 @@ exports.updateAddress = async (req, res) => {
         });
     }
     catch (err) {
-        console.err("Update address error: ", err);
+        console.error("Update address error: ", err);
         res.status(500).json({ message: "Failed to update" });
     }
 };
