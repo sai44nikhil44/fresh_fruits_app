@@ -117,3 +117,47 @@ exports.updateAddress = async (req, res) => {
         res.status(500).json({ message: "Failed to update" });
     }
 };
+
+exports.setDefaultAddress = async (req, res) => {
+    const userId = req.user.id;
+    const addressId = req.params.id;
+
+    const client = await pool.connect();
+
+    try {
+        await client.query("BEGIN");
+
+        const check = await client.query(
+            "SELECT id FROM user_addresses WHERE id = $1 AND user_id = $2",
+            [addressId, userId]
+        );
+
+        if (check.rows.length === 0) {
+            await client.query("ROLLBACK");
+            return res.status(404).json({ message: "Address not found" });
+        }
+
+        await client.query(
+            "UPDATE user_addresses SET is_default = false WHERE user_id = $1",
+            [userId]
+        );
+
+        await client.query(
+            "UPDATE user_addresses SET is_default = true WHERE id = $1 AND user_id = $2",
+            [addressId, userId]
+        );
+
+        await client.query("COMMIT");
+
+        res.json({
+            message: "Default address updated successfully"
+        });
+
+    } catch (error) {
+        await client.query("ROLLBACK");
+        console.error("Set default address error:", error);
+        res.status(500).json({ message: "Failed to set default address" });
+    } finally {
+        client.release();
+    }
+};
