@@ -49,6 +49,9 @@ exports.deleteAddress = async (req, res) => {
     try {
         const userId = req.user.id;
         const addressId = req.params.id;
+        console.log("user id: ", userId);
+        console.log("address id: ", addressId);
+
 
         await pool.query(
             "DELETE FROM user_addresses WHERE id = $1 AND user_id = $2",
