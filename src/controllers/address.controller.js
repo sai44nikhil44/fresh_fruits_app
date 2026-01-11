@@ -63,3 +63,52 @@ exports.deleteAddress = async (req, res) => {
         res.status(500).json({ message: "Delete failed" });
     }
 };
+
+exports.updateAddress = async (req, res) => {
+    const userId = req.user.id;
+    const addressId = req.params.id;
+
+    const { line1, line2, city, state, pincode } = req.body;
+
+    if (!line1 && !line2 && !city && !state && !pincode) {
+        return res.status(400).json({
+            message: "At least one field is required to update"
+        });
+    }
+
+    try {
+        const check = await pool.query(
+            "SELECT id FROM user_address WHERE id = $1 AND user_id = $2",
+            [addressId, userId]
+        );
+
+        if (check.rows.length == 0) {
+            return res.status(404).json({ message: "Address not found." });
+        }
+
+        const result = await pool.query(
+            `
+      UPDATE addresses
+      SET
+        line1 = COALESCE($1, line1),
+        line2 = COALESCE($2, line2),
+        city = COALESCE($3, city),
+        state = COALESCE($4, state),
+        pincode = COALESCE($5, pincode),
+        updated_at = NOW()
+      WHERE id = $6 AND user_id = $7
+      RETURNING *
+      `,
+            [line1, line2, city, state, pincode, addressId, userId]
+        );
+
+        res.json({
+            message: "Address updated successfully",
+            address: result.rows[0]
+        });
+    }
+    catch (err) {
+        console.err("Update address error: ", err);
+        res.status(500).json({ message: "Failed to update" });
+    }
+};

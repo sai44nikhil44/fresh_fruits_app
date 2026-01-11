@@ -6,5 +6,6 @@ const addressController = require("../controllers/address.controller");
 router.post("/", authMiddleware, addressController.addAddress);
 router.get("/", authMiddleware, addressController.getAddresses);
 router.delete("/:id", authMiddleware, addressController.deleteAddress);
+router.put("/:id", authMiddleware, addressController.updateAddress);
 
 module.exports = router;
