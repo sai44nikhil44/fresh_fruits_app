@@ -85,6 +85,9 @@ exports.updateAddress = async (req, res) => {
             [addressId, userId]
         );
 
+        console.log("length: ", check.rows.length);
+        console.log("record: ", check.rows[0]);
+
         if (check.rows.length == 0) {
             return res.status(404).json({ message: "Address not found." });
         }
