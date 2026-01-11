@@ -68,12 +68,12 @@ exports.updateAddress = async (req, res) => {
     const userId = req.user.id;
     const addressId = req.params.id;
 
-    const { line1, line2, city, state, pincode } = req.body;
+    const { address_line, city, state, pincode } = req.body;
 
     console.log("req.body: ", req.body);
     console.log("userId", userId);
     console.log("addressId: ", addressId);
-    if (!line1 && !line2 && !city && !state && !pincode) {
+    if (!address_line && !city && !state && !pincode) {
         return res.status(400).json({
             message: "At least one field is required to update"
         });
@@ -96,16 +96,15 @@ exports.updateAddress = async (req, res) => {
             `
       UPDATE user_addresses
       SET
-        line1 = COALESCE($1, line1),
-        line2 = COALESCE($2, line2),
-        city = COALESCE($3, city),
-        state = COALESCE($4, state),
-        pincode = COALESCE($5, pincode),
+        address_line = COALESCE($1, address_line),
+        city = COALESCE($2, city),
+        state = COALESCE($3, state),
+        pincode = COALESCE($4, pincode),
         updated_at = NOW()
-      WHERE id = $6 AND user_id = $7
+      WHERE id = $5 AND user_id = $6
       RETURNING *
       `,
-            [line1, line2, city, state, pincode, addressId, userId]
+            [address_line, city, state, pincode, addressId, userId]
         );
 
         res.json({
