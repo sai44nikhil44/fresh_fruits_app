@@ -3,7 +3,7 @@ const express = require("express");
 const pool = require("./config/db");
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
-const addressRoutes = require("./routes/auth.routes");
+const addressRoutes = require("./routes/address.routes");
 
 const app = express();
 app.use(express.json());
