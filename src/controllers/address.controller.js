@@ -81,7 +81,7 @@ exports.updateAddress = async (req, res) => {
 
     try {
         const check = await pool.query(
-            "SELECT id FROM user_address WHERE id = $1 AND user_id = $2",
+            "SELECT id FROM user_addresses WHERE id = $1 AND user_id = $2",
             [addressId, userId]
         );
 
@@ -91,7 +91,7 @@ exports.updateAddress = async (req, res) => {
 
         const result = await pool.query(
             `
-      UPDATE addresses
+      UPDATE user_addresses
       SET
         line1 = COALESCE($1, line1),
         line2 = COALESCE($2, line2),
