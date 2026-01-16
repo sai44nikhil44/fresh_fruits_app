@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const verifyToken = require("../middlewares/auth.middleware");
-const isAdmin = require("../middleware/admin.middleware");
+const isAdmin = require("../middlewares/admin.middleware");
 const controller = require("../controllers/admin.product.controller");
 
 router.post("/", verifyToken, isAdmin, controller.createProduct);
