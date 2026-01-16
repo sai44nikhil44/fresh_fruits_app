@@ -49,9 +49,6 @@ exports.deleteAddress = async (req, res) => {
     try {
         const userId = req.user.id;
         const addressId = req.params.id;
-        console.log("user id: ", userId);
-        console.log("address id: ", addressId);
-
 
         await pool.query(
             "DELETE FROM user_addresses WHERE id = $1 AND user_id = $2",
@@ -70,9 +67,6 @@ exports.updateAddress = async (req, res) => {
 
     const { address_line, city, state, pincode } = req.body;
 
-    console.log("req.body: ", req.body);
-    console.log("userId", userId);
-    console.log("addressId: ", addressId);
     if (!address_line && !city && !state && !pincode) {
         return res.status(400).json({
             message: "At least one field is required to update"
@@ -84,9 +78,6 @@ exports.updateAddress = async (req, res) => {
             "SELECT id FROM user_addresses WHERE id = $1 AND user_id = $2",
             [addressId, userId]
         );
-
-        console.log("length: ", check.rows.length);
-        console.log("record: ", check.rows[0]);
 
         if (check.rows.length == 0) {
             return res.status(404).json({ message: "Address not found." });
