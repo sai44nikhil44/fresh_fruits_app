@@ -39,7 +39,7 @@ exports.placeOrder = async (req, res) => {
         // 2. Get default address
         const addressRes = await client.query(
             `
-            SELECT id FROM addresses
+            SELECT id FROM user_addresses
             WHERE user_id = $1 AND is_default = true
             LIMIT 1
             `,
