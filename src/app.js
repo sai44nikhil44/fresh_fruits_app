@@ -6,6 +6,7 @@ const userRoutes = require("./routes/user.routes");
 const addressRoutes = require("./routes/address.routes");
 const productRoutes = require("./routes/product.routes");
 const adminProductRoutes = require("./routes/admin.product.routes");
+const cartRoutes = require("./routes/cart.routes");
 
 const app = express();
 app.use(express.json());
@@ -37,5 +38,6 @@ app.use("/api/user", userRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/admin/products", adminProductRoutes);
+app.use("/api/cart", cartRoutes);
 
 module.exports = app;

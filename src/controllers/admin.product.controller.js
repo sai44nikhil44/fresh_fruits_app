@@ -45,7 +45,8 @@ exports.updateProduct = async (req, res) => {
       SET name = COALESCE($1, name),
           price = COALESCE($2, price),
           stock = COALESCE($3, stock),
-          image_url = COALESCE($4, image_url)
+          image_url = COALESCE($4, image_url),
+          updated_at = NOW()
       WHERE id = $5
       RETURNING *
       `,
