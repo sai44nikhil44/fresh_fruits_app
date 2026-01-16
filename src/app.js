@@ -5,6 +5,7 @@ const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 const addressRoutes = require("./routes/address.routes");
 const productRoutes = require("./routes/product.routes");
+const adminProductRoutes = require("./routes/admin.product.routes");
 
 const app = express();
 app.use(express.json());
@@ -35,5 +36,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/address", addressRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/admin/products", adminProductRoutes);
 
 module.exports = app;
