@@ -84,6 +84,23 @@ exports.placeOrder = async (req, res) => {
         // 6. Clear cart
         await client.query("DELETE FROM cart_items WHERE cart_id = $1", [cartId]);
 
+        // 5️⃣ Reduce product stock
+        for (const item of itemsRes.rows) {
+            const update = await client.query(
+                `
+                UPDATE products
+                SET stock = stock - $1
+                WHERE id = $2 AND stock >= $1
+                RETURNING stock
+                `,
+                [item.quantity, item.product_id]
+            );
+
+            if (update.rows.length === 0) {
+                throw new Error("Insufficient stock for product");
+            }
+        }
+
         await client.query("COMMIT");
 
         res.status(201).json({
