@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const auth = require("../routes/auth.routes");
+const auth = require("../middlewares/auth.middleware");
 const controller = require("../controllers/payment.controller");
 
 router.post("/create", auth, controller.createPaymentOrder);

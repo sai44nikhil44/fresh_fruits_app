@@ -7,9 +7,6 @@ exports.createPaymentOrder = async (req, res) => {
     const userId = req.user.id;
     const { order_id } = req.body;
 
-    console.log("UserId: ", userId);
-    console.log("OrderId: ", order_id);
-
     try {
         // 1. Validate order
         const orderRes = await pool.query(
