@@ -15,6 +15,7 @@ module.exports = function (req, res, next) {
             id: decoded.userId,
             role: decoded.role
         };
+        console.log("decoded user: ", req.user);
 
         next();
     }
