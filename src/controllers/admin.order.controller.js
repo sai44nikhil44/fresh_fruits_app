@@ -74,14 +74,79 @@ exports.updateOrderStatus = async (req, res) => {
         return res.status(400).json({ message: "Invalid status" });
     }
 
+    const client = await pool.connect();
+
     try {
-        await pool.query(
-            "UPDATE orders SET status = $1 WHERE id = $2",
+        await client.query("BEGIN");
+
+        // 1 Fetch order
+        const orderRes = await client.query(
+            `
+            SELECT id, status, stock_restored
+            FROM orders
+            WHERE id = $1
+            FOR UPDATE
+            `,
+            [orderId]
+        );
+
+        if (orderRes.rows.length === 0) {
+            throw new Error("Order not found");
+        }
+
+        const order = orderRes.rows[0];
+
+        // 2 Restore stock ONLY if cancelling and not restored
+        if (status === "CANCELLED" && !order.stock_restored) {
+            const itemsRes = await client.query(
+                `
+                SELECT product_id, quantity
+                FROM order_items
+                WHERE order_id = $1
+                `,
+                [orderId]
+            );
+
+            for (const item of itemsRes.rows) {
+                await client.query(
+                    `
+                    UPDATE products
+                    SET stock = stock + $1
+                    WHERE id = $2
+                    `,
+                    [item.quantity, item.product_id]
+                );
+            }
+
+            await client.query(
+                `
+                UPDATE orders
+                SET stock_restored = true
+                WHERE id = $1
+                `,
+                [orderId]
+            );
+        }
+
+        // 3 Update order status
+        await client.query(
+            `
+            UPDATE orders
+            SET status = $1
+            WHERE id = $2
+            `,
             [status, orderId]
         );
 
-        res.json({ message: "Order status updated" });
+        await client.query("COMMIT");
+
+        res.json({ message: "Order status updated successfully" });
+
     } catch (err) {
-        res.status(500).json({ message: "Failed to update status" });
+        await client.query("ROLLBACK");
+        console.error("Order status update error:", err.message);
+        res.status(400).json({ message: err.message });
+    } finally {
+        client.release();
     }
 };
