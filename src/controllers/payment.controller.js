@@ -7,6 +7,9 @@ exports.createPaymentOrder = async (req, res) => {
     const userId = req.user.id;
     const { order_id } = req.body;
 
+    console.log("UserId: ", userId);
+    console.log("OrderId: ", order_id);
+
     try {
         // 1. Validate order
         const orderRes = await pool.query(
@@ -23,6 +26,8 @@ exports.createPaymentOrder = async (req, res) => {
         }
 
         const order = orderRes.rows[0];
+
+        console.log("Order Response: ", order);
 
         if (order.payment_status === "PAID") {
             return res.status(400).json({ message: "Order already paid" });
