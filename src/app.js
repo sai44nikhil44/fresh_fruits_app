@@ -13,6 +13,10 @@ const paymentRoutes = require("./routes/payment.routes");
 const path = require("path");
 
 const app = express();
+
+console.log("Serving static from:", path.join(__dirname, "..", "public"));
+app.use(express.static(path.join(__dirname, "..", "public")));
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -46,8 +50,5 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin/orders", adminOrderRoutes);
 app.use("/api/payments", paymentRoutes);
-
-console.log("Serving static from:", path.join(__dirname, "..", "public"));
-app.use(express.static(path.join(__dirname, "..", "public")));
 
 module.exports = app;
