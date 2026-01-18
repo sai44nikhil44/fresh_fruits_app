@@ -11,6 +11,7 @@ const orderRoutes = require("./routes/order.routes");
 const adminOrderRoutes = require("./routes/admin.order.routes");
 const paymentRoutes = require("./routes/payment.routes");
 const path = require("path");
+const cors = require("cors");
 
 const app = express();
 
@@ -50,5 +51,11 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin/orders", adminOrderRoutes);
 app.use("/api/payments", paymentRoutes);
+
+app.use(cors({
+  origin: "*", // OK for now (later restrict)
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 module.exports = app;

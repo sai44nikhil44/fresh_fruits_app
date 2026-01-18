@@ -1,60 +1,164 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <title>Razorpay Test</title>
+  <meta charset="UTF-8" />
+  <title>Payment Page</title>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 350px;
+      text-align: center;
+    }
+
+    button {
+      padding: 12px 20px;
+      background: #3399cc;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    button:disabled {
+      background: gray;
+    }
+
+    .msg {
+      margin-top: 15px;
+    }
+  </style>
 </head>
 
 <body>
-  <button onclick="pay()">Pay Now</button>
+
+  <div class="card">
+    <h2>Complete Payment</h2>
+
+    <!-- ⚠️ Replace with a real ORDER UUID from DB -->
+    <input type="text" id="orderId" placeholder="Enter Order ID"
+      style="width:100%; padding:10px; margin-bottom:15px;" />
+
+    <!-- ⚠️ Replace with a real JWT -->
+    <input type="text" id="token" placeholder="Paste JWT Token" style="width:100%; padding:10px; margin-bottom:15px;" />
+
+    <button onclick="startPayment()">Pay Now</button>
+
+    <div class="msg" id="message"></div>
+  </div>
 
   <script>
-    async function pay() {
-      const res = await fetch("http://13.235.78.64:3000/api/payments/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzMGY1ZGY0OC0zZDBjLTRhN2ItOTc4Mi1jZDc3NWI3MDQ5NWEiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3Njg2NzQwMzIsImV4cCI6MTc2OTI3ODgzMn0.JKnqbwJoVHbnVynb34ubsRRcCR7cOTODlSpUyKTAAQc"
-        },
-        body: JSON.stringify({
-          order_id: "65d4b03f-010d-4a0e-9c64-a7f5a08fb4c5"
-        })
-      });
+    async function startPayment() {
+      const orderId = document.getElementById("orderId").value.trim();
+      const token = document.getElementById("token").value.trim();
+      const messageEl = document.getElementById("message");
 
-      const data = await res.json();
+      if (!orderId || !token) {
+        messageEl.innerHTML = "<span style='color:red'>Order ID and Token required</span>";
+        return;
+      }
 
-      var options = {
-        key: data.key,
-        amount: data.amount,
-        currency: data.currency,
-        name: "Fresh Fruits",
-        description: "Order Payment",
-        order_id: data.razorpay_order_id,
+      messageEl.innerHTML = "Creating payment order...";
 
-        handler: async function (response) {
-          await fetch("http://13.235.78.64:3000/api/payments/verify", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzMGY1ZGY0OC0zZDBjLTRhN2ItOTc4Mi1jZDc3NWI3MDQ5NWEiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3Njg2NzQwMzIsImV4cCI6MTc2OTI3ODgzMn0.JKnqbwJoVHbnVynb34ubsRRcCR7cOTODlSpUyKTAAQc"
-            },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              payment_id: data.payment_id
-            })
-          });
+      try {
+        // 1️⃣ Call backend to create Razorpay order
+        const res = await fetch("/api/payments/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({ order_id: orderId })
+        });
 
-          alert("Payment Success");
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || "Failed to create payment");
         }
-      };
 
-      var rzp = new Razorpay(options);
-      rzp.open();
+        // 2️⃣ Razorpay options
+        const options = {
+          key: data.key,
+          amount: data.amount,
+          currency: data.currency,
+          name: "Fresh Fruits",
+          description: "Order Payment",
+          order_id: data.razorpay_order_id,
+
+          handler: async function (response) {
+            messageEl.innerHTML = "Verifying payment...";
+
+            // 3️⃣ Verify payment with backend
+            const verifyRes = await fetch("/api/payments/verify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+              },
+              body: JSON.stringify({
+                payment_id: data.payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (!verifyRes.ok) {
+              throw new Error(verifyData.message || "Payment verification failed");
+            }
+
+            messageEl.innerHTML = "<span style='color:green'>Payment Successful ✅</span>";
+          },
+
+          prefill: {
+            name: "Test User",
+            email: "test@example.com",
+            contact: "9999999999"
+          },
+
+          theme: {
+            color: "#3399cc"
+          }
+        };
+
+        const rzp = new Razorpay(options);
+
+        rzp.on("payment.failed", function (response) {
+          console.error("Payment failed:", response.error);
+          messageEl.innerHTML =
+            "<span style='color:red'>Payment failed: " +
+            response.error.description +
+            "</span>";
+        });
+
+        rzp.open();
+
+      } catch (err) {
+        console.error(err);
+        messageEl.innerHTML =
+          "<span style='color:red'>" + err.message + "</span>";
+      }
     }
   </script>
+
 </body>
 
 </html>
