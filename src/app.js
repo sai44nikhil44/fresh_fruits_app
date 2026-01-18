@@ -15,7 +15,7 @@ const path = require("path");
 const app = express();
 
 console.log("Serving static from:", path.join(__dirname, "..", "public"));
-app.use(express.static(path.join(__dirname, "..", "public")));
+app.use(express.static(path.join(__dirname, "public")));
 
 app.use(express.json());
 
