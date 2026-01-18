@@ -5,6 +5,6 @@ const controller = require("../controllers/admin.payment.controller");
 const auth = require("../middlewares/auth.middleware");
 const admin = require("../middlewares/admin.middleware");
 
-router.get("/payments", auth, admin, controller.getAllPayments);
+router.get("/", auth, admin, controller.getAllPayments);
 
 module.exports = router;
