@@ -6,5 +6,6 @@ const auth = require("../middlewares/auth.middleware");
 const admin = require("../middlewares/admin.middleware");
 
 router.get("/", auth, admin, controller.getAllPayments);
+router.post("/:id/refund", auth, admin, controller.refundPayment);
 
 module.exports = router;
