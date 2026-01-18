@@ -12,6 +12,7 @@ const adminOrderRoutes = require("./routes/admin.order.routes");
 const paymentRoutes = require("./routes/payment.routes");
 const path = require("path");
 const cors = require("cors");
+const adminPaymentRoutes = require("./routes/admin.payment.routes");
 
 const app = express();
 
