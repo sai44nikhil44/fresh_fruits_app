@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Razorpay Test</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+
+<body>
+  <button onclick="pay()">Pay Now</button>
+
+  <script>
+    async function pay() {
+      const res = await fetch("http://13.235.78.64:3000/api/payments/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzMGY1ZGY0OC0zZDBjLTRhN2ItOTc4Mi1jZDc3NWI3MDQ5NWEiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3Njg2NzQwMzIsImV4cCI6MTc2OTI3ODgzMn0.JKnqbwJoVHbnVynb34ubsRRcCR7cOTODlSpUyKTAAQc"
+        },
+        body: JSON.stringify({
+          order_id: "65d4b03f-010d-4a0e-9c64-a7f5a08fb4c5"
+        })
+      });
+
+      const data = await res.json();
+
+      var options = {
+        key: data.key,
+        amount: data.amount,
+        currency: data.currency,
+        name: "Fresh Fruits",
+        description: "Order Payment",
+        order_id: data.razorpay_order_id,
+
+        handler: async function (response) {
+          await fetch("http://13.235.78.64:3000/api/payments/verify", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzMGY1ZGY0OC0zZDBjLTRhN2ItOTc4Mi1jZDc3NWI3MDQ5NWEiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3Njg2NzQwMzIsImV4cCI6MTc2OTI3ODgzMn0.JKnqbwJoVHbnVynb34ubsRRcCR7cOTODlSpUyKTAAQc"
+            },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              payment_id: data.payment_id
+            })
+          });
+
+          alert("Payment Success");
+        }
+      };
+
+      var rzp = new Razorpay(options);
+      rzp.open();
+    }
+  </script>
+
+</body>
+
+</html>
