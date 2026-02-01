@@ -1,5 +1,8 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
+const path = require("path");
+
 const pool = require("./config/db");
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
@@ -10,17 +13,27 @@ const cartRoutes = require("./routes/cart.routes");
 const orderRoutes = require("./routes/order.routes");
 const adminOrderRoutes = require("./routes/admin.order.routes");
 const paymentRoutes = require("./routes/payment.routes");
-const path = require("path");
-const cors = require("cors");
 const adminPaymentRoutes = require("./routes/admin.payment.routes");
 
 const app = express();
 
-console.log("Serving static from:", path.join(__dirname, "..", "public"));
-app.use(express.static(path.join(__dirname, "public")));
+/* ✅ CORS MUST COME FIRST */
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
+/* ✅ Then body parsing */
 app.use(express.json());
 
+/* Static files */
+app.use(express.static(path.join(__dirname, "public")));
+
+/* Health checks */
 app.get("/", (req, res) => {
   res.send("Backend running");
 });
@@ -29,20 +42,7 @@ app.get("/health", (req, res) => {
   res.json({ status: "OK" });
 });
 
-app.get("/db-test", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT NOW()");
-    res.json({
-      db: "connected",
-      time: result.rows[0],
-    });
-  }
-  catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "DB Connection failed" });
-  }
-});
-
+/* Routes */
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/address", addressRoutes);
@@ -53,11 +53,5 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/admin/orders", adminOrderRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/admin/payments", adminPaymentRoutes);
-
-app.use(cors({
-  origin: "*", // OK for now (later restrict)
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
 
 module.exports = app;
